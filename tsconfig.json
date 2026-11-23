@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "strict": true,
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "esModuleInterop": true
+  },
+  "include": ["app/**/*.ts", "app/**/*.tsx"],
+  "exclude": ["**/dist", "**/node_modules"]
+}

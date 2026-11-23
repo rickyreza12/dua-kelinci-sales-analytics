@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.env
+*.zip
+
+
+GPEV_IMPLEMENTATION_PROMPT.md

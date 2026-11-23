@@ -1,0 +1,212 @@
+openapi: 3.0.3
+info:
+  title: Dua Kelinci Sales Analytics API
+  version: 1.0.0
+  description: Planned contract for locally hosted TypeScript backend; implementation pending.
+servers:
+  - url: http://localhost:3001
+components:
+  parameters:
+    dateFrom:
+      in: query
+      name: dateFrom
+      schema: { type: string, format: date }
+    dateTo:
+      in: query
+      name: dateTo
+      schema: { type: string, format: date }
+    region:
+      in: query
+      name: region
+      schema: { type: string }
+    brand:
+      in: query
+      name: brand
+      schema: { type: string }
+  schemas:
+    Metric:
+      type: object
+      required: [netSales]
+      properties:
+        netSales: { type: integer, format: int64, description: Indonesian rupiah }
+    SalesOverview:
+      type: object
+      required: [totalNetSales, uniqueInvoiceCount, activeOutletCount, totalCartons]
+      properties:
+        totalNetSales: { type: integer, format: int64 }
+        uniqueInvoiceCount: { type: integer }
+        activeOutletCount: { type: integer }
+        totalCartons: { type: integer }
+        datasetVersion: { type: string }
+    RegionSales:
+      type: object
+      required: [region, netSales]
+      properties:
+        region: { type: string }
+        netSales: { type: integer, format: int64 }
+        sharePercent: { type: number }
+    BrandSales:
+      type: object
+      required: [brand, netSales]
+      properties:
+        brand: { type: string }
+        netSales: { type: integer, format: int64 }
+        sharePercent: { type: number }
+    WeakOutlet:
+      type: object
+      required: [rank, outletId, outletName, region, branch, netSales]
+      properties:
+        rank: { type: integer }
+        outletId: { type: string }
+        outletName: { type: string }
+        region: { type: string }
+        branch: { type: string }
+        outletType: { type: string }
+        netSales: { type: integer, format: int64 }
+    ReportSummary:
+      type: object
+      required: [text, language]
+      properties:
+        text: { type: string, description: Exactly one Indonesian paragraph }
+        language: { type: string, enum: [id-ID] }
+    TelegramStatus:
+      type: object
+      required: [configured, enabled]
+      properties:
+        configured: { type: boolean }
+        enabled: { type: boolean }
+        reason: { type: string }
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+        details: { type: string }
+paths:
+  /api/v1/health:
+    get:
+      summary: Backend readiness
+      responses:
+        '200':
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: { status: { type: string }, datasetVersion: { type: string } }
+  /api/v1/sales/overview:
+    get:
+      summary: Aggregated sales summary for filtered dataset
+      parameters:
+        - { $ref: '#/components/parameters/dateFrom' }
+        - { $ref: '#/components/parameters/dateTo' }
+        - { $ref: '#/components/parameters/region' }
+        - { $ref: '#/components/parameters/brand' }
+      responses:
+        '200':
+          description: Overview
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalesOverview' }
+  /api/v1/sales/regions:
+    get:
+      summary: Net sales grouped by normalized region
+      parameters:
+        - { $ref: '#/components/parameters/dateFrom' }
+        - { $ref: '#/components/parameters/dateTo' }
+        - { $ref: '#/components/parameters/region' }
+        - { $ref: '#/components/parameters/brand' }
+      responses:
+        '200':
+          description: All matching regions
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/RegionSales' } }
+  /api/v1/sales/brands:
+    get:
+      summary: Net sales grouped by brand
+      parameters:
+        - { $ref: '#/components/parameters/dateFrom' }
+        - { $ref: '#/components/parameters/dateTo' }
+        - { $ref: '#/components/parameters/region' }
+        - { $ref: '#/components/parameters/brand' }
+      responses:
+        '200':
+          description: All matching brands
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/BrandSales' } }
+  /api/v1/outlets/weakest:
+    get:
+      summary: Lowest five outlet IDs by filtered net sales
+      parameters:
+        - { $ref: '#/components/parameters/dateFrom' }
+        - { $ref: '#/components/parameters/dateTo' }
+        - { $ref: '#/components/parameters/region' }
+        - { $ref: '#/components/parameters/brand' }
+      responses:
+        '200':
+          description: Up to five outlets
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/WeakOutlet' } }
+  /api/v1/reports/summary:
+    get:
+      summary: One-paragraph Indonesian report based on filtered dataset
+      parameters:
+        - { $ref: '#/components/parameters/dateFrom' }
+        - { $ref: '#/components/parameters/dateTo' }
+        - { $ref: '#/components/parameters/region' }
+        - { $ref: '#/components/parameters/brand' }
+      responses:
+        '200':
+          description: Summary text
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReportSummary' }
+  /api/v1/telegram/status:
+    get:
+      summary: Return non-secret Telegram configuration status
+      responses:
+        '200':
+          description: Availability
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TelegramStatus' }
+  /api/v1/telegram/send:
+    post:
+      summary: Send the server-generated report to configured chat on explicit request
+      description: Server generates report from validated filters and credentials never leave server. Loopback-only in local version.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dateFrom: { type: string, format: date }
+                dateTo: { type: string, format: date }
+                region: { type: string }
+                brand: { type: string }
+      responses:
+        '200':
+          description: Sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: { sent: { type: boolean } }
+        '503':
+          description: Telegram unconfigured
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/v1/events:
+    get:
+      summary: SSE stream for sales.updated and sales.load_failed events
+      responses:
+        '200':
+          description: SSE stream
+          content:
+            text/event-stream:
+              schema: { type: string }

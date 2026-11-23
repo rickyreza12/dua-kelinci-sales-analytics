@@ -1,0 +1,618 @@
+{
+  "specificationVersion": "1.1.0",
+  "name": "Dua Kelinci Sales Dashboard Frontend",
+  "purpose": "Recreate the approved clean, understated sales dashboard without access to the reference image.",
+  "implementation": {
+    "framework": "React",
+    "language": "TypeScript",
+    "buildTool": "Vite",
+    "styling": "Tailwind CSS",
+    "charts": "Recharts",
+    "icons": "Bundled local SVG icons under public/assets/icons; see assets.icons and assets.usage",
+    "dataSource": "TypeScript backend HTTP API; do not compute business totals in UI components",
+    "designPriority": "Accurate hierarchy and spacing over decorative effects"
+  },
+  "designPrinciples": [
+    "Enterprise internal-tool aesthetic: confident, restrained, readable",
+    "White canvas, warm red brand accent, pale rose selection surfaces, charcoal text",
+    "Consistent 8px spacing rhythm and subtle borders",
+    "No gradients, glossy surfaces, 3D illustrations, excessive shadows or decorative charts",
+    "Never hardcode sample business figures or outlet names",
+    "Use Indonesian rupiah (IDR) throughout monetary data"
+  ],
+  "theme": {
+    "mode": "light",
+    "colors": {
+      "brandPrimary": "#C51F2D",
+      "brandPrimaryHover": "#A91926",
+      "brandSoft": "#FCEBED",
+      "brandBorder": "#F3D5D9",
+      "background": "#F7F8FA",
+      "surface": "#FFFFFF",
+      "surfaceMuted": "#F9FAFB",
+      "textPrimary": "#181B22",
+      "textSecondary": "#5D6472",
+      "textMuted": "#858D9A",
+      "border": "#E6E8EC",
+      "chartRed": "#CB2433",
+      "chartRedMedium": "#DE5660",
+      "chartRedLight": "#EE9299",
+      "chartRedPale": "#F5C4C8",
+      "chartGray": "#D5D8DD",
+      "success": "#248547",
+      "error": "#C62828"
+    },
+    "typography": {
+      "fontFamily": "Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+      "pageTitle": {
+        "fontSizePx": 30,
+        "fontWeight": 700,
+        "lineHeight": 1.2
+      },
+      "pageSubtitle": {
+        "fontSizePx": 16,
+        "fontWeight": 400
+      },
+      "sectionTitle": {
+        "fontSizePx": 20,
+        "fontWeight": 700
+      },
+      "metricValue": {
+        "fontSizePx": 27,
+        "fontWeight": 700,
+        "fontVariantNumeric": "tabular-nums"
+      },
+      "body": {
+        "fontSizePx": 14,
+        "fontWeight": 400,
+        "lineHeight": 1.5
+      },
+      "label": {
+        "fontSizePx": 13,
+        "fontWeight": 500
+      },
+      "caption": {
+        "fontSizePx": 12,
+        "fontWeight": 400
+      }
+    },
+    "spacing": {
+      "baseUnitPx": 8,
+      "pagePaddingPx": 24,
+      "cardPaddingPx": 24,
+      "gridGapPx": 20,
+      "sectionGapPx": 22
+    },
+    "shape": {
+      "cardRadiusPx": 14,
+      "controlRadiusPx": 9,
+      "pillRadiusPx": 999,
+      "borderWidthPx": 1
+    },
+    "shadow": "0 2px 12px rgba(20, 25, 35, 0.035)",
+    "icons": {
+      "sizePx": 20,
+      "strokeWidth": 1.9
+    }
+  },
+  "shell": {
+    "type": "sidebar-plus-content",
+    "sidebar": {
+      "widthPx": 244,
+      "background": "#FFFFFF",
+      "borderRight": "1px solid #E6E8EC",
+      "topBrandAreaHeightPx": 118,
+      "brand": {
+        "name": "Dua Kelinci",
+        "style": "red brand mark and wordmark",
+        "assetRule": "Use an authorized logo asset when supplied; otherwise show text-only brand name, do not invent a replacement logo"
+      },
+      "navigation": [
+        {
+          "id": "dashboard",
+          "label": "Dashboard",
+          "icon": "house",
+          "active": true
+        },
+        {
+          "id": "regions",
+          "label": "Sales by Region",
+          "icon": "map",
+          "active": false
+        },
+        {
+          "id": "brands",
+          "label": "Sales by Brand",
+          "icon": "tag",
+          "active": false
+        },
+        {
+          "id": "outlets",
+          "label": "Outlets",
+          "icon": "store",
+          "active": false
+        }
+      ],
+      "navigationBehavior": "Use hash routes for Dashboard, Region, Brand, Outlets, and Settings. See GPEV_IMPLEMENTATION_PROMPT.md for the detail views.",
+      "activeItem": {
+        "background": "#FCEBED",
+        "textColor": "#C51F2D",
+        "radiusPx": 9,
+        "iconColor": "#C51F2D"
+      },
+      "footer": {
+        "statusDotColor": "#248547",
+        "statusLabel": "Data ready",
+        "details": [
+          "Source: sales.csv",
+          "Last updated: dynamic timestamp"
+        ]
+      }
+    },
+    "main": {
+      "background": "#F7F8FA",
+      "maxWidthPx": 1600,
+      "minWidthPx": 0,
+      "paddingPx": 24
+    }
+  },
+  "page": {
+    "id": "sales-dashboard",
+    "route": "/",
+    "header": {
+      "title": "Sales Dashboard",
+      "subtitle": "Penjualan September – Oktober 2026",
+      "subtitleRule": "Generate subtitle from actual dataset or selected date range",
+      "filtersPosition": "top-right on desktop, below title on smaller screens",
+      "filters": [
+        {
+          "id": "period",
+          "type": "date-range",
+          "default": "full-dataset-range",
+          "icon": "calendar-days",
+          "widthPx": 260
+        },
+        {
+          "id": "region",
+          "type": "select",
+          "defaultLabel": "All Regions",
+          "optionsSource": "API metadata",
+          "widthPx": 190
+        },
+        {
+          "id": "brand",
+          "type": "select",
+          "defaultLabel": "All Brands",
+          "optionsSource": "API metadata",
+          "widthPx": 190
+        }
+      ],
+      "refresh": {
+        "icon": "refresh-cw",
+        "tooltip": "Data refreshes automatically when the CSV file changes",
+        "manualRefreshAvailable": true
+      }
+    },
+    "sections": [
+      {
+        "id": "kpis",
+        "type": "metric-card-grid",
+        "desktopColumns": 4,
+        "tabletColumns": 2,
+        "mobileColumns": 1,
+        "cards": [
+          {
+            "id": "netSales",
+            "label": "Total Net Sales",
+            "icon": "wallet",
+            "metric": "overview.totalNetSales",
+            "format": "rupiah-full",
+            "accent": "red",
+            "optionalSecondary": "period-over-period change only when comparable periods exist"
+          },
+          {
+            "id": "invoices",
+            "label": "Total Invoices",
+            "icon": "file-text",
+            "metric": "overview.uniqueInvoiceCount",
+            "format": "integer",
+            "accent": "red"
+          },
+          {
+            "id": "outlets",
+            "label": "Total Outlets",
+            "icon": "store",
+            "metric": "overview.activeOutletCount",
+            "format": "integer",
+            "accent": "red"
+          },
+          {
+            "id": "cartons",
+            "label": "Total Cartons",
+            "icon": "package",
+            "metric": "overview.totalCartons",
+            "format": "integer",
+            "accent": "red"
+          }
+        ],
+        "appearance": {
+          "surface": "white",
+          "iconContainer": "light rose 50x50 rounded rectangle",
+          "labelAboveValue": true,
+          "cardMinHeightPx": 132
+        }
+      },
+      {
+        "id": "analysis",
+        "type": "two-column-grid",
+        "desktopColumns": "1.08fr 1fr",
+        "gapPx": 20,
+        "cards": [
+          {
+            "id": "sales-by-region",
+            "title": "Sales by Region",
+            "chartType": "donut",
+            "data": "regions[].netSales",
+            "category": "regions[].region",
+            "appearance": {
+              "donutLeft": true,
+              "legendRight": true,
+              "ringWidthPx": 38,
+              "centerText": "filtered total net sales",
+              "palette": [
+                "#C51F2D",
+                "#DD4A56",
+                "#ED8790",
+                "#F3C2C6",
+                "#D5D8DD"
+              ]
+            },
+            "legendColumns": [
+              "region",
+              "share percentage",
+              "net sales in rupiah"
+            ],
+            "behavior": "Sort regions by net sales descending; support all real regions, not only five mockup rows"
+          },
+          {
+            "id": "sales-by-brand",
+            "title": "Sales by Brand",
+            "chartType": "horizontal-bar",
+            "data": "brands[].netSales",
+            "category": "brands[].brand",
+            "appearance": {
+              "barsStartAligned": true,
+              "barHeightPx": 24,
+              "barGapPx": 14,
+              "primaryBar": "#C51F2D",
+              "otherBars": "progressive muted red tints",
+              "trailingValue": "share percentage"
+            },
+            "behavior": "Sort by net sales descending; show all brands or use a scrollable region if needed; tooltip shows exact net sales"
+          }
+        ]
+      },
+      {
+        "id": "actions",
+        "type": "two-column-grid",
+        "desktopColumns": "1.08fr 1fr",
+        "gapPx": 20,
+        "cards": [
+          {
+            "id": "weakest-outlets",
+            "title": "5 Weakest Outlets",
+            "contentType": "ranked-table",
+            "columns": [
+              {
+                "key": "rank",
+                "label": "#",
+                "width": "44px",
+                "appearance": "soft rose number pill"
+              },
+              {
+                "key": "outletName",
+                "label": "Outlet",
+                "width": "auto"
+              },
+              {
+                "key": "region",
+                "label": "Region",
+                "width": "auto"
+              },
+              {
+                "key": "netSales",
+                "label": "Net Sales",
+                "width": "140px",
+                "align": "right",
+                "format": "rupiah-full"
+              }
+            ],
+            "rankingRule": "Five outlet IDs with lowest aggregated net sales in current filter; stable ascending sort with outlet ID tie-breaker",
+            "rowCount": 5,
+            "emptyState": "No outlets match the selected filters"
+          },
+          {
+            "id": "telegram-summary",
+            "title": "Telegram Summary",
+            "titleIcon": "send",
+            "contentType": "business-summary",
+            "summary": {
+              "language": "id-ID",
+              "format": "one-paragraph",
+              "source": "reports.summary API",
+              "containerBackground": "#FFF6F7",
+              "contentRequirements": [
+                "date range",
+                "total net sales",
+                "top region",
+                "top brand",
+                "five weakest outlets",
+                "grounded follow-up recommendation"
+              ],
+              "mustMatchCurrentFilters": true,
+              "neverUseMockData": true
+            },
+            "actions": [
+              {
+                "id": "copy",
+                "label": "Copy Summary",
+                "icon": "copy",
+                "variant": "outline",
+                "behavior": "copy currently displayed summary to clipboard"
+              },
+              {
+                "id": "send",
+                "label": "Send to Telegram",
+                "icon": "send",
+                "variant": "solid-brand",
+                "behavior": "POST the current report to backend Telegram endpoint only on explicit click",
+                "disabledWhen": "Telegram not configured or send request pending"
+              }
+            ],
+            "status": "When Telegram is not configured show a quiet note; keep Copy Summary functional"
+          }
+        ]
+      }
+    ]
+  },
+  "interaction": {
+    "filters": "Date range, region and brand filter every metric, chart, outlet ranking and summary consistently",
+    "apiStates": [
+      "loading",
+      "ready",
+      "empty",
+      "error"
+    ],
+    "refresh": "Maintain a Server-Sent Events connection to backend; on sales.updated refetch dashboard data while preserving filters; also allow manual refresh",
+    "invalidData": "Show nonblocking warning and continue to display last valid backend snapshot",
+    "copyFeedback": "Display a brief copied confirmation without changing report text",
+    "telegramFeedback": "Show sending, success or failure states; never auto-send after CSV changes"
+  },
+  "responsive": {
+    "desktop": {
+      "minWidthPx": 1200,
+      "sidebar": "fixed visible",
+      "kpiColumns": 4,
+      "mainContentColumns": 2
+    },
+    "tablet": {
+      "minWidthPx": 768,
+      "maxWidthPx": 1199,
+      "sidebar": "collapsed icon rail or accessible drawer",
+      "kpiColumns": 2,
+      "mainContentColumns": 1
+    },
+    "mobile": {
+      "maxWidthPx": 767,
+      "sidebar": "drawer",
+      "kpiColumns": 1,
+      "mainContentColumns": 1,
+      "filters": "stacked",
+      "table": "horizontal scrolling when necessary",
+      "summaryButtons": "stacked full-width"
+    }
+  },
+  "accessibility": {
+    "minimumTextContrast": "WCAG AA",
+    "keyboardNavigation": true,
+    "focusIndicator": "2px brand-red outline with 2px offset",
+    "chartAlternative": "Expose same numerical data in readable text or table",
+    "semanticTables": true,
+    "respectReducedMotion": true
+  },
+  "acceptanceCriteria": [
+    "Dashboard matches documented panel order, spacing, typography, white-and-red palette and understated visual style",
+    "No invented figures, growth indicators, salespeople or outlets are displayed",
+    "All sales metrics derive from the backend and use correct Indonesian rupiah formatting",
+    "All charts and summary respond to active filters",
+    "The five weakest outlets use the agreed backend ranking and stable IDs",
+    "CSV file changes are reflected after backend reload notification without manual browser refresh",
+    "Telegram integration is optional and never blocks local analytics",
+    "No decorative gradients, oversized shadows or fake UI controls"
+  ],
+  "assets": {
+    "strategy": "Use bundled, locally served SVG assets; no runtime icon CDN or external image service",
+    "rootPublicDirectory": "app/web/public/assets/icons/",
+    "publicBaseUrl": "/assets/icons/",
+    "format": "SVG (Scalable Vector Graphics)",
+    "license": "Handcrafted original outline icons provided with this bundle; usable in this project",
+    "designRules": {
+      "viewBox": "0 0 24 24",
+      "defaultSizePx": 20,
+      "defaultStrokeWidth": 1.9,
+      "stroke": "currentColor",
+      "fill": "none",
+      "linecap": "round",
+      "linejoin": "round",
+      "activeColor": "#C51F2D",
+      "mutedColor": "#5D6472",
+      "metricIconBackground": "#FCEBED",
+      "metricIconColor": "#C51F2D",
+      "prohibit": "No emoji icons, 3D art, gradient icons, decorative stock images, or screenshots used as icons"
+    },
+    "icons": {
+      "house": {
+        "path": "/assets/icons/house.svg",
+        "file": "public/assets/icons/house.svg",
+        "alt": "house"
+      },
+      "map": {
+        "path": "/assets/icons/map.svg",
+        "file": "public/assets/icons/map.svg",
+        "alt": "map"
+      },
+      "tag": {
+        "path": "/assets/icons/tag.svg",
+        "file": "public/assets/icons/tag.svg",
+        "alt": "tag"
+      },
+      "store": {
+        "path": "/assets/icons/store.svg",
+        "file": "public/assets/icons/store.svg",
+        "alt": "store"
+      },
+      "calendar-days": {
+        "path": "/assets/icons/calendar-days.svg",
+        "file": "public/assets/icons/calendar-days.svg",
+        "alt": "calendar days"
+      },
+      "chevron-down": {
+        "path": "/assets/icons/chevron-down.svg",
+        "file": "public/assets/icons/chevron-down.svg",
+        "alt": "chevron down"
+      },
+      "refresh-cw": {
+        "path": "/assets/icons/refresh-cw.svg",
+        "file": "public/assets/icons/refresh-cw.svg",
+        "alt": "refresh cw"
+      },
+      "wallet": {
+        "path": "/assets/icons/wallet.svg",
+        "file": "public/assets/icons/wallet.svg",
+        "alt": "wallet"
+      },
+      "file-text": {
+        "path": "/assets/icons/file-text.svg",
+        "file": "public/assets/icons/file-text.svg",
+        "alt": "file text"
+      },
+      "package": {
+        "path": "/assets/icons/package.svg",
+        "file": "public/assets/icons/package.svg",
+        "alt": "package"
+      },
+      "copy": {
+        "path": "/assets/icons/copy.svg",
+        "file": "public/assets/icons/copy.svg",
+        "alt": "copy"
+      },
+      "send": {
+        "path": "/assets/icons/send.svg",
+        "file": "public/assets/icons/send.svg",
+        "alt": "send"
+      },
+      "check": {
+        "path": "/assets/icons/check.svg",
+        "file": "public/assets/icons/check.svg",
+        "alt": "check"
+      },
+      "check-circle": {
+        "path": "/assets/icons/check-circle.svg",
+        "file": "public/assets/icons/check-circle.svg",
+        "alt": "check circle"
+      },
+      "alert-triangle": {
+        "path": "/assets/icons/alert-triangle.svg",
+        "file": "public/assets/icons/alert-triangle.svg",
+        "alt": "alert triangle"
+      },
+      "info": {
+        "path": "/assets/icons/info.svg",
+        "file": "public/assets/icons/info.svg",
+        "alt": "info"
+      },
+      "loader-circle": {
+        "path": "/assets/icons/loader-circle.svg",
+        "file": "public/assets/icons/loader-circle.svg",
+        "alt": "loader circle"
+      },
+      "arrow-up-right": {
+        "path": "/assets/icons/arrow-up-right.svg",
+        "file": "public/assets/icons/arrow-up-right.svg",
+        "alt": "arrow up right"
+      },
+      "filter": {
+        "path": "/assets/icons/filter.svg",
+        "file": "public/assets/icons/filter.svg",
+        "alt": "filter"
+      },
+      "bar-chart-3": {
+        "path": "/assets/icons/bar-chart-3.svg",
+        "file": "public/assets/icons/bar-chart-3.svg",
+        "alt": "bar chart 3"
+      },
+      "menu": {
+        "path": "/assets/icons/menu.svg",
+        "file": "public/assets/icons/menu.svg",
+        "alt": "menu"
+      },
+      "x": {
+        "path": "/assets/icons/x.svg",
+        "file": "public/assets/icons/x.svg",
+        "alt": "x"
+      }
+    },
+    "usage": {
+      "sidebar": {
+        "dashboard": "house",
+        "regions": "map",
+        "brands": "tag",
+        "outlets": "store"
+      },
+      "filters": {
+        "period": "calendar-days",
+        "dropdown": "chevron-down",
+        "manualRefresh": "refresh-cw",
+        "filter": "filter"
+      },
+      "metrics": {
+        "netSales": "wallet",
+        "invoices": "file-text",
+        "outlets": "store",
+        "cartons": "package"
+      },
+      "telegram": {
+        "title": "send",
+        "copy": "copy",
+        "send": "send",
+        "success": "check-circle",
+        "error": "alert-triangle"
+      },
+      "feedback": {
+        "success": "check-circle",
+        "info": "info",
+        "error": "alert-triangle",
+        "loading": "loader-circle"
+      },
+      "mobile": {
+        "openMenu": "menu",
+        "closeMenu": "x"
+      }
+    },
+    "brand": {
+      "officialLogoIncluded": false,
+      "fallbackText": "Dua Kelinci",
+      "fallbackColor": "#C51F2D",
+      "instruction": "Only use an officially supplied/authorized logo; until then render a typographic text-only fallback. Do not recreate the red rabbit mark."
+    },
+    "charts": {
+      "renderWith": "Recharts",
+      "rule": "Render charts from live API data; do not use static chart SVG assets or hardcoded category percentages."
+    },
+    "implementationNotes": [
+      "SVG files use currentColor, but when embedded via HTML img they do not inherit the CSS color of the img element. For dynamic color, inline the SVG via a component or apply an appropriate CSS mask.",
+      "Provide accessible labels for action-only buttons; decorative icons should use aria-hidden=true when rendered in React.",
+      "No external networks needed at runtime to render icons."
+    ]
+  }
+}

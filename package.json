@@ -1,0 +1,31 @@
+{
+  "name": "dua-kelinci-sales-analytics",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "app/*"
+  ],
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "dev": "concurrently -k \"npm run dev -w @dk/api\" \"npm run dev -w @dk/web\"",
+    "lint": "eslint app",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "npm run build --workspaces",
+    "start": "node --env-file-if-exists=.env app/api/dist/index.js"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/supertest": "^6.0.0",
+    "concurrently": "^9.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0",
+    "supertest": "^7.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "~5.9.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^3.2.0"
+  }
+}
