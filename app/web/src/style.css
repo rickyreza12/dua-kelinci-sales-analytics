@@ -577,6 +577,159 @@ th small {
   background: var(--rose);
   font-weight: 700;
 }
+.breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+.breadcrumb a {
+  padding: 0;
+  min-height: 44px;
+}
+.breadcrumb > .icon {
+  width: 12px;
+  height: 12px;
+  rotate: -90deg;
+}
+header h1 .icon {
+  margin-inline-end: 8px;
+  color: var(--red);
+}
+.comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.comparison-grid label {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+.comparison-grid select {
+  min-width: 0;
+}
+.comparison-totals > div {
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 12px;
+  overflow-wrap: anywhere;
+}
+.comparison-totals dd {
+  font-weight: 700;
+}
+.comparison > [role="status"],
+.comparison-details {
+  display: grid;
+  gap: 16px;
+}
+.comparison-details {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.comparison-swap {
+  align-self: end;
+}
+.comparison-filters {
+  grid-template-columns: minmax(195px, 1.2fr) repeat(
+      2,
+      minmax(110px, 1fr)
+    ) 44px minmax(110px, 1fr);
+  align-items: end;
+}
+.comparison-filters fieldset {
+  min-width: 0;
+}
+.comparison-filters legend {
+  margin-bottom: 4px;
+}
+.comparison-modes {
+  display: flex;
+  gap: 4px;
+}
+.comparison-modes button {
+  flex: 1;
+}
+.comparison-modes [aria-pressed="true"] {
+  background: var(--red);
+  border-color: var(--red);
+  color: white;
+}
+@media (max-width: 1000px) {
+  .comparison-filters {
+    grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
+  }
+  .comparison-filters > :nth-child(-n + 2) {
+    grid-column: 1 / -1;
+  }
+}
+.comparison-totals {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.comparison-totals h2 {
+  background: var(--rose);
+  padding: 12px;
+  border-radius: 8px;
+}
+.comparison-totals > div + div h2 {
+  background: #eef0f3;
+}
+.comparison-totals dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 95px), 1fr));
+  gap: 8px;
+}
+.comparison-totals dt {
+  color: var(--muted);
+}
+.comparison-totals dd {
+  font-size: 18px;
+}
+.comparison-delta {
+  padding: 14px;
+  margin-bottom: 0;
+  border-radius: 9px;
+  background: var(--rose);
+  color: var(--red);
+}
+.comparison-delta[data-direction="up"] {
+  background: #e8f5ed;
+  color: #176738;
+}
+.comparison-delta[data-direction="even"] {
+  background: #eef0f3;
+  color: #181b22;
+}
+.comparison-metric {
+  margin-bottom: 12px;
+}
+.comparison-metric > div {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) minmax(88px, auto);
+  align-items: center;
+  gap: 8px;
+}
+.comparison-metric .track i {
+  background: var(--red);
+}
+.comparison-metric > div:last-child .track i {
+  background: #697586;
+}
+.comparison-insight p {
+  margin-bottom: 0;
+}
+@media (max-width: 1000px) {
+  .comparison-details {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .comparison-totals {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 .summary-tabs {
   display: flex;
   flex-wrap: wrap;

@@ -13,11 +13,13 @@ Date bounds are inclusive. Blank dates use the dataset bounds. The same filters 
 
 ## Reload and Telegram
 
+Open [Sales Comparison](docs/sales-comparison.md) in the sidebar for side-by-side region and brand comparisons.
+
 The sidebar opens Dashboard, Region, Brand, Outlets, and Settings views. Filters stay selected as you navigate. Settings shows Telegram and live CSV refresh status without exposing secrets.
 
 To try a reload without editing the original, copy `data/sales_sep_oct_2026.csv` to `data/working-copy.csv`. Copy `.env.example` to `.env`, set `SALES_CSV=data/working-copy.csv`, then start the app. Save a change to the working copy: the dashboard updates automatically and retains its filters. A malformed save shows a warning and keeps the last valid snapshot. The initial file must be valid for startup.
 
-Copy Summary works without Telegram. To send, configure `TELEGRAM_ENABLED=true`, `TELEGRAM_BOT_TOKEN`, and a numeric `TELEGRAM_CHAT_ID` in root `.env`, grant the bot permission to post, and restart. Only **Send to Telegram** requests delivery; filters and CSV saves never send. The API generates the message from the latest snapshot. Keep this app on loopback; public exposure requires authentication and abuse protection.
+Copy Paragraph works without Telegram. To enable manual sending, follow the [Telegram setup guide](docs/telegram-setup.md). Filters and CSV saves never send reports. Keep this app on loopback; public exposure requires authentication and abuse protection.
 
 The sidebar logo is supplied concept artwork, not an official corporate logo. Replace it in `app/web/public/assets/brand`, or set `VITE_BRAND_LOGO` to a local public asset path for Vite.
 
@@ -29,7 +31,7 @@ The sidebar logo is supplied concept artwork, not an official corporate logo. Re
 | Sales by region | Analytics and region chart |
 | Sales by brand | Analytics and brand bars |
 | Five weakest outlets | Stable outlet-ID ranking and table |
-| Indonesian Telegram paragraph | `app/api/src/report.ts` and Copy Summary |
+| Indonesian Telegram paragraph | `app/api/src/report.ts` and Copy Paragraph |
 | Filtered, responsive dashboard | `app/web/src/` and supplied assets |
 | Automatic reload with last-good fallback | `dataset.ts`, SSE, browser refetch |
 | Optional manual Telegram delivery | `telegram.ts` and local send route |

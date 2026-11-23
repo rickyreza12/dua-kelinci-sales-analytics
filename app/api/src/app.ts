@@ -3,6 +3,7 @@ import { openDataset } from "./dataset.js";
 import { analyze, filtersFrom } from "./sales.js";
 import { report } from "./report.js";
 import { telegram } from "./telegram.js";
+import { compareSales } from "./comparison.js";
 
 const prefix = "/api/v1";
 const localOrigins = new Set([
@@ -47,6 +48,14 @@ export function createApp(
       clearInterval(heartbeat);
       dataset.events.off("change", notify);
     });
+  });
+  api.get("/sales/comparison", (req, res) => {
+    const { data, datasetVersion } = dataset.get();
+    try {
+      res.json(compareSales(data, datasetVersion, req.query));
+    } catch {
+      res.status(400).json({ error: "Invalid comparison filters" });
+    }
   });
   const endpoints = {
     "/sales/overview": "overview",
@@ -136,12 +145,10 @@ export function createApp(
   const fail: ErrorRequestHandler = (error, _req, res, _next) => {
     void _next;
     const status = [400, 413, 415].includes(error.status) ? error.status : 500;
-    res
-      .status(status)
-      .json({
-        error:
-          status === 500 ? "Unexpected server error" : "Invalid request body",
-      });
+    res.status(status).json({
+      error:
+        status === 500 ? "Unexpected server error" : "Invalid request body",
+    });
   };
   app.use(fail);
   if (web) app.use(express.static(web));

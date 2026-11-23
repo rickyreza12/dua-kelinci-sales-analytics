@@ -13,6 +13,50 @@ import { telegram } from "./telegram.js";
 const source = new URL("../../../data/sales_sep_oct_2026.csv", import.meta.url);
 const csv = readFileSync(source, "utf8");
 const api = "/api/v1";
+test("compares both modes against the CSV and distinguishes missing rows", async () => {
+  const dataset = openDataset(fileURLToPath(source));
+  try {
+    const client = request(createApp(dataset, telegram({})));
+    const day = "2026-09-01";
+    const rows = csv
+      .split(/\r?\n/)
+      .map((line) => line.split(","))
+      .filter((row) => row[0] === day);
+    const sum = (predicate: (row: string[]) => boolean) =>
+      rows.filter(predicate).reduce((total, row) => total + Number(row[14]), 0);
+    const route = `${api}/sales/comparison`;
+    for (const [mode, a, b, scope] of [
+      ["region", "Jabodetabek", "Sumatera", "Sukro"],
+      ["brand", "Sukro", "Kacang Dua Kelinci", "Jabodetabek"],
+    ]) {
+      const match = (name: string) => (row: string[]) =>
+        mode === "region"
+          ? row[2].toLowerCase() === name.toLowerCase() && row[8] === scope
+          : row[8] === name && row[2].toLowerCase() === scope.toLowerCase();
+      const left = sum(match(a)),
+        right = sum(match(b));
+      const { body } = await client
+        .get(route)
+        .query({ mode, a, b, scope, dateFrom: day, dateTo: day })
+        .expect(200);
+      expect(body.a.netSales).toBe(left);
+      expect(body.b.netSales).toBe(rows.some(match(b)) ? right : null);
+      expect(body.difference).toBe(rows.some(match(b)) ? right - left : null);
+    }
+    const { body } = await client
+      .get(route)
+      .query({ mode: "brand", a: "Sukro", b: "No matching brand" })
+      .expect(200);
+    expect(body.b.netSales).toBeNull();
+    expect(body.percentChange).toBeNull();
+    await client
+      .get(route)
+      .query({ mode: "region", a: "Jabar", b: "Jawa Barat" })
+      .expect(400);
+  } finally {
+    dataset.close();
+  }
+});
 test("reconciles the original CSV independently of the app parser", () => {
   const [header, ...lines] = csv.trimEnd().split(/\r?\n/);
   const rows = lines.map((line) => line.split(","));

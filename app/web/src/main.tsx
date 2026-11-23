@@ -7,6 +7,7 @@ import type { analyze, Filters, parseSales } from "../../api/src/sales.js";
 import type { report } from "../../api/src/report.js";
 import type { telegram } from "../../api/src/telegram.js";
 import "./style.css";
+import { Comparison } from "./Comparison.js";
 
 gsap.registerPlugin(useGSAP);
 
@@ -45,6 +46,7 @@ const links = [
   ["regions", "Sales by Region", "map"],
   ["brands", "Sales by Brand", "tag"],
   ["outlets", "Outlets", "store"],
+  ["comparison", "Sales Comparison", "compare"],
   ["settings", "Settings", "info"],
 ] as const;
 type View = (typeof links)[number][0];
@@ -56,6 +58,10 @@ const viewHeaders: Record<View, [string, string]> = {
   brands: ["Sales by Brand", "Product brand contribution"],
   outlets: ["Outlet Performance", "Find low-volume outlets and plan follow-up"],
   settings: ["Settings", "Local application and Telegram configuration"],
+  comparison: [
+    "Sales Comparison",
+    "Bandingkan kinerja penjualan antar wilayah atau merek pada periode yang sama.",
+  ],
 };
 function Icon({ name }: { name: string }) {
   return (
@@ -213,7 +219,7 @@ function DetailView({
   data,
   connected,
 }: {
-  view: Exclude<View, "dashboard">;
+  view: Exclude<View, "dashboard" | "comparison">;
   data: Dashboard;
   connected: boolean;
 }) {
@@ -607,7 +613,19 @@ function App() {
               <Icon name="menu" />
               Menu
             </button>
-            <h1>{viewHeaders[active][0]}</h1>
+            <nav className="breadcrumb" aria-label="Breadcrumb">
+              <a href="#dashboard">
+                <Icon name="house" /> Home
+              </a>
+              <Icon name="chevron-down" />
+              <span aria-current="page">{viewHeaders[active][0]}</span>
+            </nav>
+            <h1>
+              <Icon
+                name={links.find(([id]) => id === active)?.[2] ?? "house"}
+              />
+              {viewHeaders[active][0]}
+            </h1>
             <p>
               {data && active === "dashboard"
                 ? `Penjualan ${date(data.dateFrom)} sampai ${date(data.dateTo)}`
@@ -891,6 +909,15 @@ function App() {
                       </section>
                     </div>
                   </>
+                ) : active === "comparison" ? (
+                  <Comparison
+                    regions={data.metadata.regionOptions}
+                    brands={data.metadata.brandOptions}
+                    dateFrom={filters.dateFrom}
+                    dateTo={filters.dateTo}
+                    revision={revision}
+                    invalid={invalid}
+                  />
                 ) : (
                   <DetailView
                     view={active}
